@@ -8,10 +8,13 @@ const cors = require('cors');
 require('./config/auth');
 
 dotenv.config();
+const PORT = process.env.PORT || 5000;
+
+
+
 const app = express();
 
-
-const allowedOrigins = ['https://home-tutor-finder.vercel.app/'];
+const allowedOrigins = ['https://home-tutor-finder.vercel.app'];
 const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
@@ -28,7 +31,7 @@ app.use(cors(corsOptions));
 app.use(session({secret: 'cats'}));
 app.use(passport.initialize());
 app.use(passport.session());
-const PORT = process.env.PORT || 5000;
+
 
 
 app.use(express.json());
