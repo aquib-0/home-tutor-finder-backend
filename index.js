@@ -11,7 +11,7 @@ dotenv.config();
 const app = express();
 
 
-const allowedOrigins = ['https://home-tutor-finder-ov4x13dwi-md-aquibs-projects.vercel.app/'];
+const allowedOrigins = ['https://home-tutor-finder.vercel.app/'];
 const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
