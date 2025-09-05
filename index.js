@@ -30,10 +30,6 @@ app.get('/google/callback',
 )
 
 
-// connectDB()
-// .then(()=> app.listen(PORT, ()=> console.log("Server running on port 5000")))
-// .catch(err => console.log(err));
 connectDB()
-.then(()=> console.log("connected to database"))
+.then(()=> app.listen(PORT, ()=> console.log("Server running on port 5000")))
 .catch(err => console.log(err));
-module.exports = app;
