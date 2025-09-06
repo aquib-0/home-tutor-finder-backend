@@ -11,10 +11,10 @@ dotenv.config();
 const PORT = process.env.PORT || 5000;
 
 
-
 const app = express();
 
-const allowedOrigins = ['https://home-tutor-finder.vercel.app'];
+const allowedOrigins = ['https://home-tutor-finder.vercel.app', 'http://localhost:5173'];
+
 const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
@@ -24,7 +24,8 @@ const corsOptions = {
       return callback(new Error(msg), false);
     }
     return callback(null, true);
-  }
+  },
+  credentials: true
 };
 
 app.use(cors(corsOptions));

@@ -46,10 +46,10 @@ const createUser = async (req, res)=>{
 
 
 const loginUser = async (req, res) => {
+
     const { email, password } = req.body;
     try {
         const user = await User.findOne({ email });
-
         // If no user is found, RETURN immediately.
         if (!user) {
             return res.status(401).json({ message: "Invalid credentials - no such user exists" });
@@ -62,7 +62,6 @@ const loginUser = async (req, res) => {
             return res.status(401).json({ message: "Invalid credentials - email or password mismatch" });
         }
         
-        console.log("User successfully logged in");
         
         // This part only runs if both checks pass.
         return res.status(200).json({
@@ -79,34 +78,6 @@ const loginUser = async (req, res) => {
         console.log(err);
     }
 }
-
-// const loginUser = async(req, res)=>{
-//     const {email, password} = req.body;
-//     try{
-//         const user = await User.findOne({email});
-//         if(!user)
-//         {
-//             res.status(401).json({message: "Invalid credentials - no such user exists"});
-//         }
-//         const isMatch = await bcrypt.compare(password, user.password);
-//         if(!isMatch)
-//         {
-//             res.status(401).json({message: "Invalid credentials - email or password mismatch"});
-//         }
-//         console.log("User successfully logged in");
-//         return res.status(200).json({
-//             _id: user._id,
-//             username: user.username,
-//             email: user.email,
-//             avatar: user.avatar,
-//             role: user.role,
-//             bio: user.bio,
-//         });
-//     } catch(err){
-//         res.status(500).json({message: err.message});
-//         console.log(err);
-//     }
-// }
   
 
 module.exports = {getUser, createUser, loginUser, getTutors, getStudents};
