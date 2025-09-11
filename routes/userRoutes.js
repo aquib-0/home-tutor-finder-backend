@@ -4,13 +4,13 @@ const {getUser, createUser, loginUser, getTutors, getStudents} = require('../con
 
 router.get('/user', getUser);
 
-router.get('/tutors', getTutors);
+router.get('/tutors', getTutors); //protected
 
-router.get('/students', getStudents);
+router.get('/students', getStudents); //protected
 
-router.post('/login', loginUser);
+// router.post('/login', loginUser); 
 
-router.post('/register', createUser);
+// router.post('/register', createUser);
   
 
 module.exports = router;

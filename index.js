@@ -38,7 +38,8 @@ app.use(passport.session());
 app.use(express.json());
 
 app.use('/api/users', userRoutes);
-
+app.use('/api/protected', require('./routes/protected'));
+app.use('/api/auth', require('./routes/auth'));
 app.get('/auth/google', 
     passport.authenticate('google', {scope: [ 'email', 'profile' ]})
 );
