@@ -14,10 +14,10 @@ router.get('/students', auth, async (req, res)=>{
     }
 });
 
-router.get('/tutors', auth, async (req, res)=>{
+router.get('/tutors', auth , async (req, res)=>{
     try{
         const tutors = await User.find({role: 'tutor'}).select('-password');
-        res.json(tutors);
+        return res.json(tutors);
     } catch(err)
     {
         console.error(err.message);
