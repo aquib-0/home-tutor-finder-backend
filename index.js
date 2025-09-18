@@ -41,7 +41,9 @@ const corsOptions = {
     }
     return callback(null, true);
   },
-  credentials: true
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'x-auth-token'],
+  credentials: true,
 };
 
 app.use(cors(corsOptions));
@@ -89,7 +91,7 @@ app.post('/api/protected/upload-to-drive', auth, upload.single('videoFile'), asy
   try {
       if (!req.file) {
         return res.status(400).send('No file uploaded.');
-      }
+      } 
 
       // 3. Find the current user to get their tokens
       const user = await User.findById(req.user.id);
