@@ -71,7 +71,7 @@ router.post('/login', async (req, res)=>{
         jwt.sign(
             payload,
             process.env.JWT_SECRET,
-            {expiresIn: '0.1h'},
+            {expiresIn: '3h'},
             (err, token)=>{
                 if(err) throw err;
                 res.json({ token });

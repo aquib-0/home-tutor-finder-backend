@@ -10,6 +10,8 @@ const userSchema = new mongoose.Schema({
     role: {type: String},
     googleId: {type: String,},
     githubId: {type: String,},
+    googleAccessToken: {type: String},
+    googleRefreshToken: {type: String},
     bio: {type: String, default: "Promote Education", maxlength: 200},
     },
     {
@@ -24,7 +26,7 @@ userSchema.pre('save', async function (next){
 
     try{
         const salt = await bcrypt.genSalt(10);
-        this.password = await bcrypt.hash(this.password, salt);
+        this.password = bcrypt.hash(this.password, salt);
         next();
     } catch(err){
         next(err);
