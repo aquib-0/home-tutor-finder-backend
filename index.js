@@ -78,7 +78,7 @@ app.get('/api/auth/google/callback', async (req, res)=>{
     });
 
     console.log("Token acquired and saved");
-    res.redirect(`${import.meta.env.VITE_FRONTEND_URI}`);
+    res.redirect(`${process.env.VITE_FRONTEND_URI}`);
   } catch(err)
   {
     console.error('Error exchanging authorization code for tokens:', err);
