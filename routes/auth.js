@@ -1,6 +1,8 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const Student = require('../models/Student');
+const Tutor = require('../models/Tutor');
 const jwt = require('jsonwebtoken');
 
 const router = express.Router();
@@ -10,6 +12,8 @@ router.post('/register', async (req, res)=>{
     try{
     
     let user = await User.findOne({email});
+    let student;
+    let tutor;
     //check if user already exists
     if(user){
         return res.status(400).json({msg: 'User already exists'});
@@ -26,15 +30,38 @@ router.post('/register', async (req, res)=>{
         password: hashedPassword,
         role,
     });
-
     await user.save();
-    res.status(201).json({msg: "User registered successfully"});
+    if(role === 'Student')
+    {
+         student = new Student({
+            userId: user._id,
+            username,
+            email,
+            password: hashedPassword
+        });
+        await student.save();
+        res.status(201).json({msg: "User registered successfully"});
+    }
+    else if(role === "Tutor")
+    {
+        tutor = new Tutor({
+            userId: user._id,
+            username,
+            email,
+            password: hashedPassword
+        });
+        await tutor.save();
+        res.status(201).json({msg: "User registered successfully"});
+    }
+    else{
+        res.status(400).json({msg: "Invalid role provided"});
+    }
 
     } 
     catch(err)
     {
         console.error(err.message);
-        res.status(500).send('Server error');
+        res.status(500).json({msg: "Server error"});
     }
 });
 
@@ -81,7 +108,7 @@ router.post('/login', async (req, res)=>{
     catch(err)
     {
         console.error(err.message);
-        res.status(500).send('Server error');
+        res.status(500).json({msg: "Server error"});
     }
 });
 
