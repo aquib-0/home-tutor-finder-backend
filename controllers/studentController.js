@@ -4,9 +4,12 @@ const Course = require('../models/Course');
 const getEnrolledCourse = async(req, res)=>{
     try {
         const {user_id} = req.query;
-        // const user = await Student.findById(user_id);
+        const student = await Student.findById(user_id);
         // const enrolledCourses = await Course.find({_id: user.enrolledCourse});
-        const enrolledCourses = await Course.find({enrolledStudents: user_id});
+        // const enrolledCourses = await Course.find({enrolledStudents: user_id});
+        // res.status(200).json(enrolledCourses);
+        const enrolledCourses = student.enrolledCourse;
+        // console.log(enrolledCourses);
         res.status(200).json(enrolledCourses);
     } catch(err)
     {
