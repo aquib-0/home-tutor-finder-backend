@@ -14,11 +14,10 @@ const CourseSchema = new mongoose.Schema({
     videoThumbail: {type: String},
     // This ID comes from the cloud service (e.g., Cloudinary's public_id)
     // It's useful for managing the file (e.g., deleting it)
-    public_id: {
-        type: String,
-        required: true,
-    },
+    public_id: {type: String, required: true},
     // duration: {type: Number, required: true},
+    enrolledStudents: [{type: mongoose.Schema.Types.ObjectId, ref: 'Student'}],
+    enrolledStudentsCount: {type: Number, default: 0},
     views: {type: Number, default: 0},
     uploadedAt: {type: Date, default: Date.now,},
     },

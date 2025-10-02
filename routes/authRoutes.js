@@ -1,11 +1,15 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const dotenv = require('dotenv');
 const User = require('../models/User');
 const Student = require('../models/Student');
 const Tutor = require('../models/Tutor');
+const auth = require('../middleware/auth');
+const oauth2client = require('../googleClient');
 const jwt = require('jsonwebtoken');
-
+dotenv.config();
 const router = express.Router();
+
 
 router.post('/register', async (req, res)=>{
     const {username, email, password, role} = req.body;
@@ -77,16 +81,21 @@ router.post('/login', async (req, res)=>{
         }
 
         //check password
-        const isMatch =  bcrypt.compare(password, user.password);
+        const isMatch = await bcrypt.compare(password, user.password);
         if(!isMatch)
         {
             return res.status(400).json({msg: 'Invalid credentials - password'});
         }
 
-        //create a payload
-        const payload = {
+        let payload;
+
+        if(user.role === 'Student')
+        {
+            var student = await Student.findOne({userId: user._id});
+            payload = {
             user: {
-                id: user._id,
+                id: student._id,
+                userId: user._id,
                 email: user.email,
                 username: user.username,
                 avatar: user.avatar,
@@ -94,6 +103,34 @@ router.post('/login', async (req, res)=>{
                 bio: user.bio,
             }
         };
+        }
+        else if(user.role === 'Tutor')
+        {
+            var tutor = await Tutor.findOne({userId: user._id});
+            payload = {
+            user: {
+                id: tutor._id,
+                userId: user._id,
+                email: user.email,
+                username: user.username,
+                avatar: user.avatar,
+                role: user.role,
+                bio: user.bio,
+            }
+        };
+        }
+
+        //create a payload
+        // const payload = {
+        //     user: {
+        //         id: user._id,
+        //         email: user.email,
+        //         username: user.username,
+        //         avatar: user.avatar,
+        //         role: user.role,
+        //         bio: user.bio,
+        //     }
+        // };
         //sign the token
         jwt.sign(
             payload,
@@ -110,6 +147,37 @@ router.post('/login', async (req, res)=>{
         console.error(err.message);
         res.status(500).json({msg: "Server error"});
     }
+});
+
+router.get('/google', auth, (req, res)=>{
+  const scopes = ['https://www.googleapis.com/auth/drive.file'];
+  const authorizationUrl = oauth2client.generateAuthUrl({
+    access_type: 'offline',
+    scope: scopes,
+    state: req.user.userId
+  });
+
+  res.json({url: authorizationUrl});
+});
+
+router.get('/google/callback', async (req, res)=>{
+  const {code, state} = req.query;
+  const userId = state;
+  try{
+    const {tokens} = await oauth2client.getToken(code);
+    const {access_token, refresh_token} = tokens;
+    await User.findByIdAndUpdate(userId, {
+      googleAccessToken: access_token,
+      googleRefreshToken: refresh_token,
+    });
+
+    console.log("Token acquired and saved");
+    res.redirect(`${process.env.VITE_FRONTEND_URI}`);
+  } catch(err)
+  {
+    console.error('Error exchanging authorization code for tokens:', err);
+    res.status(500).send('Error during authentication');
+  }
 });
 
 
