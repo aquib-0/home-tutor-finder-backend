@@ -5,9 +5,6 @@ const getEnrolledCourse = async(req, res)=>{
     try {
         const {user_id} = req.query;
         const student = await Student.findById(user_id);
-        // const enrolledCourses = await Course.find({_id: user.enrolledCourse});
-        // const enrolledCourses = await Course.find({enrolledStudents: user_id});
-        // res.status(200).json(enrolledCourses);
         const enrolledCourses = student.enrolledCourse;
         // console.log(enrolledCourses);
         res.status(200).json(enrolledCourses);
@@ -25,6 +22,7 @@ const enrollInCourse = async (req, res) => {
     const updatedStudent = await Student.findByIdAndUpdate(
       studentId,
       { $addToSet: { enrolledCourse: courseId } }, // ✅ prevents duplicates
+      { $inc: {enrolledStudentsCount: 1}},
       { new: true } // return updated document
     ).populate('enrolledCourse'); // optional, populate course details
 

@@ -10,10 +10,10 @@ const oauth2client = require('../googleClient');
 const User = require('../models/User');
 const Tutor = require('../models/Tutor');
 const Course = require("../models/Course");
+const Student = require('../models/Student');
 const multer = require("multer");
 const stream = require("stream");
 const Video = require('../models/Video');
-const studentRoutes = require('../routes/studentRoutes');
 
 router.get('/get-students', auth, getStudents);
 
@@ -21,7 +21,7 @@ router.get('/get-tutors', auth, getTutors);
 
 router.get('/created-courses', auth, getCreatedCourses);
 
-router.delete('/delete-course', auth, deleteCourse);
+// router.delete('/delete-course', auth, deleteCourse);
 
 router.get('/get-all-courses', auth, getAllCourses);
 
@@ -122,6 +122,73 @@ router.post('/upload-to-drive', auth, upload.single('videoFile'), async(req, res
       console.error('Error during video upload:', error);
       res.status(500).send('An error occurred during the upload.');
     }
-})
+});
+
+router.delete('/delete-course', auth, async (req, res) => {
+  try {
+    const { courseId } = req.query;
+
+    // 1. Find the course
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
+
+    // 2. Check if the requesting user is the author
+    // if (course.authorId.toString() !== req.user.useriId) {
+    //   return res.status(403).json({ message: 'Not authorized to delete this course' });
+    // }
+
+    // 3. Get the user to access their Google credentials
+    const user = await User.findById(req.user.userId);
+    if (!user || !user.googleAccessToken) {
+      return res.status(401).json({ message: 'User not found or Google account not connected.' });
+    }
+
+    oauth2client.setCredentials({
+      access_token: user.googleAccessToken,
+      refresh_token: user.googleRefreshToken,
+    });
+
+    const drive = google.drive({ version: 'v3', auth: oauth2client });
+
+    // 4. Delete the file from Google Drive
+    if (course.public_id) {
+      try {
+        await drive.files.delete({ fileId: course.public_id });
+        console.log(`Google Drive file ${course.public_id} deleted successfully`);
+      } catch (err) {
+        console.error('Failed to delete file from Google Drive:', err.message);
+      }
+    }
+
+    // 5. Delete the corresponding Video document
+    await Video.findOneAndDelete({ public_id: course.public_id });
+
+    // 6. Remove course from Tutor's createdCourse list
+    await Tutor.findByIdAndUpdate(
+      req.user.id,
+      { $pull: { createdCourse: course._id } }
+    );
+
+    //Update the Student document by removing the currently deleting course
+    if (course.enrolledStudents && course.enrolledStudents.length > 0) {
+      await Student.updateMany(
+      { _id: { $in: course.enrolledStudents } }, // match all enrolled students
+      { $pull: { enrolledCourse: course._id } } // remove course from their enrolledCourse
+      );
+      console.log(`Removed course ${course._id} from enrolled students`);
+    }
+
+    // 7. Delete the Course document itself
+    await Course.findByIdAndDelete(courseId);
+
+    res.status(200).json({ message: 'Course and associated video deleted successfully!' });
+  } catch (error) {
+    console.error('Error during course deletion:', error);
+    res.status(500).json({ message: 'An error occurred while deleting the course.' });
+  }
+});
+
 
 module.exports = router;
