@@ -3,7 +3,7 @@ const router = express.Router();
 const {getTutors, getStudents} = require('../controllers/userController');
 const {getCreatedCourses, deleteCourse} = require('../controllers/tutorController');
 const {getAllCourses, getCourseByAuthor, getCourseById} = require('../controllers/courseController');
-const {getEnrolledCourse, enrollInCourse} = require('../controllers/studentController');
+const {getEnrolledCourse, enrollInCourse, leaveCourse} = require('../controllers/studentController');
 const auth = require('../middleware/auth');
 const {google} = require('googleapis');
 const oauth2client = require('../googleClient');
@@ -26,6 +26,8 @@ router.get('/created-courses', auth, getCreatedCourses);
 router.get('/get-all-courses', auth, getAllCourses);
 
 router.put('/enroll-in-course', auth, enrollInCourse);
+
+router.put('/leave-course', auth, leaveCourse);
 
 router.get('/get-enrolled-courses', auth, getEnrolledCourse);
 

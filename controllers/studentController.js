@@ -16,19 +16,20 @@ const getEnrolledCourse = async(req, res)=>{
 
 const enrollInCourse = async (req, res) => {
   const { studentId, courseId } = req.query;
-//   const { studentId, courseId } = req.body;
 
   try {
     const updatedStudent = await Student.findByIdAndUpdate(
       studentId,
       { $addToSet: { enrolledCourse: courseId } }, // ✅ prevents duplicates
-      { $inc: {enrolledStudentsCount: 1}},
       { new: true } // return updated document
     ).populate('enrolledCourse'); // optional, populate course details
-
+    
     const updatedCourse = await Course.findByIdAndUpdate(
       courseId,
-      { $addToSet: { enrolledStudents: studentId } }, // ✅ prevents duplicates
+      {
+        $addToSet: { enrolledStudents: studentId } ,
+        $inc: {enrolledStudentsCount: 1}
+      },
       { new: true } // return updated document
     ).populate('enrolledStudents'); // optional, populate course details
 
@@ -47,4 +48,38 @@ const enrollInCourse = async (req, res) => {
   }
 };
 
-module.exports = {getEnrolledCourse, enrollInCourse}; //, getCourseById
+const leaveCourse = async(req, res)=>{
+  const { studentId, courseId } = req.query;
+
+  try {
+    const updatedStudent = await Student.findByIdAndUpdate(
+      studentId,
+      { $pull: { enrolledCourse: courseId } }, // ✅ prevents duplicates
+      { new: true } // return updated document
+    ).populate('enrolledCourse'); // optional, populate course details
+    
+    const updatedCourse = await Course.findByIdAndUpdate(
+      courseId,
+      {
+        $pull: { enrolledStudents: studentId },
+        $inc: {enrolledStudentsCount: -1},
+      },
+      { new: true } // return updated document
+    ).populate('enrolledStudents'); // optional, populate course details
+
+    if (!updatedStudent) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    res.status(200).json({
+      message: "Course removed successfully",
+      student: updatedStudent,
+      course: updatedCourse
+    });
+  } catch (err) {
+    console.error("Error removing course:", err);
+    res.status(500).json({ message: err.message });
+  }
+}
+
+module.exports = {getEnrolledCourse, enrollInCourse, leaveCourse}; //, getCourseById
