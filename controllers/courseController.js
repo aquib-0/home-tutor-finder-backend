@@ -21,9 +21,10 @@ const getCourseByAuthor = async(req, res)=>{
 };
 
 const getCourseById = async(req, res)=> {
-    const id = req.id;
+    // const id = req.id;
+    const {courseId} = req.query;
     try{
-        const course = await Course.findById(id);
+        const course = await Course.findById(courseId);
         res.json(course);
     } catch(err)
     {
